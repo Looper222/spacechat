@@ -150,17 +150,35 @@ const regular_message = async (req, res) => {
                 console.log('Completed pull from unreadMessages section');
             }
         });
+
         // const unreadMessSection = await Chat.findOne({ members: userID && friendID }).select('unreadMessages').lean();
         // console.log(unreadMessSection);
         // console.log(unreadMessSection.unreadMessages)
-        console.log(unreadMess);
-        const unreadMessArr = [];
-        unreadMessArr.push(unreadMess.messages);
-        console.log(unreadMessArr);
-        unreadMessArr.push(messageID);
-        console.log(unreadMessArr);
 
-        const unreadMessReturn = await Chat.findOneAndUpdate({ members: userID && friendID }, { $addToSet: { unreadMessages: { receiver: friendID, messages: unreadMessArr }}}, { useFindAndModify: false }, function (err, result) {
+        console.log("UNREAD MESS" + unreadMess);
+        const unreadMessArr = [];
+        const unread_mess_object = unreadMess.unreadMessages;
+        console.log('SEC UNR MESS' + unread_mess_object);
+
+        function rebaseMessages(arrayOfMessages, destinationArray) {
+            for (let i = 0; i < arrayOfMessages.length; i++) {
+                destinationArray.push(arrayOfMessages[i]);
+            }
+            destinationArray.push(messageID);
+            return destinationArray;
+        };
+
+        const toSendArray = rebaseMessages(unread_mess_object, unreadMessArr);
+
+        console.log(toSendArray);
+
+
+        // unreadMessArr.push(unread_mess_object.messages);
+        // console.log(unreadMessArr);
+        // unreadMessArr.push(messageID);
+        // console.log(unreadMessArr);
+
+        const unreadMessReturn = await Chat.findOneAndUpdate({ members: userID && friendID }, { $addToSet: { unreadMessages: { receiver: friendID, messages: toSendArray }}}, { useFindAndModify: false }, function (err, result) {
             if (err) {
                 console.log('Failed isertion to unreadMessages section');
                 console.log(err);
